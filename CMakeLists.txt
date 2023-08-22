@@ -16,12 +16,6 @@ else()
 endif()
 # -----------------------------------
 
-if(EMSCRIPTEN OR VITA OR PSP)
-    set(BUILD_SHARED_DEFAULT OFF)
-else()
-    set(BUILD_SHARED_DEFAULT ON)
-endif()
-
 option(BUILD_STATIC   "Build libXMP static library" ON)
 option(BUILD_SHARED   "Build libXMP shared library" ${BUILD_SHARED_DEFAULT})
 if(NOT BUILD_STATIC AND NOT BUILD_SHARED)
@@ -137,7 +131,6 @@ if(BUILD_SHARED)
     endif()
 endif()
 
-
 add_library(XMP_IF INTERFACE)
 
 if(NOT BUILD_SHARED)
@@ -160,65 +153,6 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/CMakeLists.txt")
     add_subdirectory(examples)
 endif()
 
-
 # === Documentation ====
 add_subdirectory(docs)
 
-
-# === Install ====
-
-include(CMakePackageConfigHelpers)
-
-if(WIN32)
-    set(cmake_install_cmakdir "cmake")
-else()
-    set(cmake_install_cmakdir "${CMAKE_INSTALL_LIBDIR}/cmake/libxmp")
-endif()
-
-set(prefix ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix "\${prefix}")
-set(includedir "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
-set(libdir     "${CMAKE_INSTALL_FULL_LIBDIR}")
-set(bindir     "${CMAKE_INSTALL_FULL_BINDIR}")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/libxmp.pc.in"
-               "${CMAKE_CURRENT_BINARY_DIR}/libxmp.pc" @ONLY
-)
-write_basic_package_version_file(libxmp-config-version.cmake
-    COMPATIBILITY AnyNewerVersion
-)
-if(TARGET xmp_shared)
-    install(TARGETS xmp_shared EXPORT libxmp_shared_exports
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
-    install(EXPORT libxmp_shared_exports
-        DESTINATION "${cmake_install_cmakdir}"
-        FILE "libxmp-shared-targets.cmake"
-        NAMESPACE "libxmp::"
-    )
-endif()
-if(TARGET xmp_static)
-    install(TARGETS xmp_static EXPORT libxmp_static_exports
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    )
-    install(EXPORT libxmp_static_exports
-        DESTINATION "${cmake_install_cmakdir}"
-        FILE "libxmp-static-targets.cmake"
-        NAMESPACE "libxmp::"
-    )
-endif()
-install(FILES
-        libxmp-config.cmake
-        "${CMAKE_CURRENT_BINARY_DIR}/libxmp-config-version.cmake"
-        DESTINATION "${cmake_install_cmakdir}"
-)
-install(FILES
-        include/xmp.h
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/libxmp.pc"
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
-)
